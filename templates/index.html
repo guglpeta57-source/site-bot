@@ -44,18 +44,24 @@
                     </select>
                 </div>
 
-                <!-- Поле для роли (уже заполнено, но редактируемо) -->
-                <textarea id="bot-role">Ты — учитель, который помогает ученикам в подготовке к экзаменам и изучении материала.
+                <!-- Поле для роли -->
+                <textarea id="bot-role">Ты — учитель, который общается с учеником напрямую.
+Отвечай на его вопросы понятно, кратко и по делу.
 Сейчас ты ведёшь урок по предмету "математика" для 5 класса.
-Объясняй темы подробно, с примерами и проверяй понимание ученика.
-Если ученик не понимает — разбирай тему с нуля.</textarea>
+Если ученик просит объяснить тему — давай примеры и проверяй понимание.
+Не имитируй диалог с другими учениками, общайся только с тем, кто тебе пишет.</textarea>
             </div>
 
             <!-- Колонка с чатом -->
             <div class="chat-column">
                 <div id="chat" class="chat"></div>
                 <div class="input-area">
-                    <input type="text" id="message" placeholder="Введите сообщение...">
+                    <input
+                        type="text"
+                        id="message"
+                        placeholder="Введите сообщение..."
+                        onkeypress="handleKeyPress(event)"
+                    >
                     <button onclick="sendMessage()">Отправить</button>
                 </div>
             </div>
@@ -69,11 +75,17 @@
             const grade = document.getElementById("grade").value;
             const roleTextarea = document.getElementById("bot-role");
 
-            // Обновляем только строку с предметом и классом, остальной текст сохраняется
             const lines = roleTextarea.value.split('\n');
-            if (lines.length >= 2) {
-                lines[1] = `Сейчас ты ведёшь урок по предмету "${subject}" для ${grade} класса.`;
+            if (lines.length >= 3) {
+                lines[2] = `Сейчас ты ведёшь урок по предмету "${subject}" для ${grade} класса.`;
                 roleTextarea.value = lines.join('\n');
+            }
+        }
+
+        // Обработка нажатия Enter
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
             }
         }
 
@@ -100,7 +112,7 @@
                 });
 
                 const data = await response.json();
-                chat.innerHTML += `<div><b>Бот:</b> ${data.answer}</div>`;
+                chat.innerHTML += `<div><b>Учитель:</b> ${data.answer}</div>`;
                 chat.scrollTop = chat.scrollHeight;
             } catch (error) {
                 chat.innerHTML += `<div><b>Ошибка:</b> ${error.message}</div>`;
