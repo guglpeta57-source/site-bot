@@ -136,3 +136,16 @@ h1 {
         margin-top: 10px;
     }
 }
+
+/* Добавьте в конец файла style.css */
+.input-area {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-bottom: 10px;
+}
+
+.input-area button:last-child {
+    background: #ff6b6b;
+}
+
