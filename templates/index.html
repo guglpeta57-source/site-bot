@@ -9,17 +9,31 @@
 <body>
     <div class="container">
         <h1>GigaChat Bot</h1>
+
+        <!-- Поле для ввода роли бота -->
+        <div class="role-input">
+            <label for="bot-role">Роль бота:</label>
+            <textarea id="bot-role" placeholder="Ты — эксперт по Python. Отвечай подробно, с примерами кода и объяснениями."></textarea>
+        </div>
+
+        <!-- Окно чата -->
         <div id="chat" class="chat"></div>
+
+        <!-- Поле для сообщений -->
         <div class="input-area">
             <input type="text" id="message" placeholder="Введите сообщение...">
             <button onclick="sendMessage()">Отправить</button>
         </div>
     </div>
+
     <script>
+        // Функция для отправки сообщения
         async function sendMessage() {
             const messageInput = document.getElementById("message");
             const message = messageInput.value.trim();
             if (!message) return;
+
+            const botRole = document.getElementById("bot-role").value.trim() || "Ты — эксперт по Python. Отвечай подробно, с примерами кода и объяснениями.";
 
             const chat = document.getElementById("chat");
             chat.innerHTML += `<div><b>Вы:</b> ${message}</div>`;
@@ -29,8 +43,12 @@
                 const response = await fetch("/ask", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({
+                        message: message,
+                        role: botRole  // Передаём роль бота
+                    })
                 });
+
                 const data = await response.json();
                 chat.innerHTML += `<div><b>Бот:</b> ${data.answer}</div>`;
             } catch (error) {
