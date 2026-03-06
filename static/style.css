@@ -5,34 +5,80 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     background-color: #f0f0f0;
 }
+
 .container {
-    width: 500px;
+    width: 90%;
+    max-width: 900px;
     background: white;
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.content-wrapper {
+    display: flex;
+    gap: 20px;
+    height: 600px;
+}
+
+.role-column {
+    flex: 0 0 30%;
+    display: flex;
+    flex-direction: column;
+}
+
+.role-column h3 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.role-column textarea {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: none;
+    font-family: Arial, sans-serif;
+}
+
+.chat-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .chat {
-    height: 400px;
+    flex: 1;
     overflow-y: auto;
     border: 1px solid #ddd;
-    padding: 10px;
+    padding: 15px;
     margin-bottom: 10px;
     border-radius: 5px;
+    background-color: #f9f9f9;
 }
+
 .input-area {
     display: flex;
     gap: 10px;
 }
+
 .input-area input {
     flex: 1;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
 }
+
 .input-area button {
     padding: 10px 20px;
     background: #007BFF;
@@ -40,7 +86,9 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background 0.3s;
 }
+
 .input-area button:hover {
     background: #0056b3;
 }
