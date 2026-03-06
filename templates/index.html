@@ -18,7 +18,7 @@
                 <!-- Выбор предмета -->
                 <div class="select-group">
                     <label for="subject">Предмет:</label>
-                    <select id="subject">
+                    <select id="subject" onchange="updateBotRole()">
                         <option value="математика">Математика</option>
                         <option value="русский язык">Русский язык</option>
                         <option value="физика">Физика</option>
@@ -33,7 +33,7 @@
                 <!-- Выбор класса -->
                 <div class="select-group">
                     <label for="grade">Класс:</label>
-                    <select id="grade">
+                    <select id="grade" onchange="updateBotRole()">
                         <option value="5">5 класс</option>
                         <option value="6">6 класс</option>
                         <option value="7">7 класс</option>
@@ -44,11 +44,11 @@
                     </select>
                 </div>
 
-                <!-- Поле для роли (обновляется автоматически) -->
-                <textarea id="bot-role" placeholder="Ты — учитель, который помогает ученикам в подготовке к экзаменам и изучении материала.
-Сейчас ты ведёшь урок по предмету 'математика' для 5 класса.
+                <!-- Поле для роли (уже заполнено, но редактируемо) -->
+                <textarea id="bot-role">Ты — учитель, который помогает ученикам в подготовке к экзаменам и изучении материала.
+Сейчас ты ведёшь урок по предмету "математика" для 5 класса.
 Объясняй темы подробно, с примерами и проверяй понимание ученика.
-Если ученик не понимает — разбирай тему с нуля."></textarea>
+Если ученик не понимает — разбирай тему с нуля.</textarea>
             </div>
 
             <!-- Колонка с чатом -->
@@ -69,15 +69,13 @@
             const grade = document.getElementById("grade").value;
             const roleTextarea = document.getElementById("bot-role");
 
-            roleTextarea.value = `Ты — учитель, который помогает ученикам в подготовке к экзаменам и изучении материала.
-Сейчас ты ведёшь урок по предмету "${subject}" для ${grade} класса.
-Объясняй темы подробно, с примерами и проверяй понимание ученика.
-Если ученик не понимает — разбирай тему с нуля.`;
+            // Обновляем только строку с предметом и классом, остальной текст сохраняется
+            const lines = roleTextarea.value.split('\n');
+            if (lines.length >= 2) {
+                lines[1] = `Сейчас ты ведёшь урок по предмету "${subject}" для ${grade} класса.`;
+                roleTextarea.value = lines.join('\n');
+            }
         }
-
-        // Устанавливаем обработчики событий
-        document.getElementById("subject").addEventListener("change", updateBotRole);
-        document.getElementById("grade").addEventListener("change", updateBotRole);
 
         // Функция для отправки сообщения
         async function sendMessage() {
