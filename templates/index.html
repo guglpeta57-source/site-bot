@@ -11,7 +11,7 @@
         <h1>Учебный бот</h1>
 
         <div class="content-wrapper">
-            <!-- Колонка с настройками (скрытое поле роли) -->
+            <!-- Колонка с настройками -->
             <div class="role-column">
                 <h3>Настройки</h3>
 
@@ -44,7 +44,7 @@
                     </select>
                 </div>
 
-                <!-- Скрытое поле для роли (не видно пользователю) -->
+                <!-- Скрытое поле для роли -->
                 <textarea id="bot-role" style="display: none;">Ты — строгий, но добрый учитель, который помогает ученику разобраться в теме.
 
 **Правила общения:**
@@ -59,8 +59,7 @@
 - Если ученик ошибся — скажи: "Почти правильно! Попробуй ещё раз."
 - Если ученик сдался — объясни: "Давай разберём по шагам: 1) ..., 2) ..."
 
-**Сейчас ты ведёшь урок по предмету "математика" для 5 класса.**
-</textarea>
+Сейчас ты ведёшь урок по предмету "математика" для 5 класса.</textarea>
             </div>
 
             <!-- Колонка с чатом -->
@@ -73,7 +72,10 @@
                         placeholder="Введите сообщение..."
                         onkeypress="handleKeyPress(event)"
                     >
-                    <button onclick="sendMessage()">Отправить</button>
+                    <div class="buttons">
+                        <button onclick="sendMessage()">Отправить</button>
+                        <button onclick="clearChat()" class="clear-chat-button">Очистить чат</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,8 +94,8 @@
             const roleTextarea = document.getElementById("bot-role");
 
             const lines = roleTextarea.value.split('\n');
-            if (lines.length >= 3) {
-                lines[2] = `Сейчас ты ведёшь урок по предмету "${subject}" для ${grade} класса.`;
+            if (lines.length >= 10) { // Обновляем строку с предметом и классом
+                lines[9] = `Сейчас ты ведёшь урок по предмету "${subject}" для ${grade} класса.`;
                 roleTextarea.value = lines.join('\n');
             }
         }
@@ -111,47 +113,4 @@
             const message = messageInput.value.trim();
             if (!message) return;
 
-            const botRole = document.getElementById("bot-role").value.trim();
-
-            const chat = document.getElementById("chat");
-            chat.innerHTML += `<div><b>Вы:</b> ${message}</div>`;
-            messageInput.value = "";
-
-            try {
-                const response = await fetch("/ask", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        message: message,
-                        role: botRole
-                    })
-                });
-
-                const data = await response.json();
-                if (data.error) {
-                    chat.innerHTML += `<div><b>Ошибка:</b> ${data.error}</div>`;
-                } else {
-                    chat.innerHTML += `<div><b>Учитель:</b> ${data.answer}</div>`;
-                }
-                chat.scrollTop = chat.scrollHeight;
-            } catch (error) {
-                chat.innerHTML += `<div><b>Ошибка:</b> ${error.message}</div>`;
-            }
-        }
-
-        // Функция для очистки истории
-        async function clearHistory() {
-            try {
-                const response = await fetch("/clear_history", {
-                    method: "POST"
-                });
-                const chat = document.getElementById("chat");
-                chat.innerHTML = "<div>История очищена!</div>";
-            } catch (error) {
-                alert("Ошибка при очистке истории: " + error.message);
-            }
-        }
-    </script>
-</body>
-</html>
-
+            const botRole =
