@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS")
 
-# Глобальная история сообщений (для каждого пользователя можно сделать отдельную сессию)
+# История сообщений для контекста (опционально)
 conversation_history = []
 
 @app.route("/")
@@ -20,7 +20,10 @@ def home():
 def ask_gigachat():
     data = request.json
     user_message = data.get("message")
-    bot_role = data.get("role", "Ты — учитель, который помогает ученикам в подготовке к экзаменам и изучении материала.\nСейчас ты ведёшь урок по предмету 'математика' для 5 класса.\nОбъясняй темы подробно, с примерами и проверяй понимание ученика.\nЕсли ученик не понимает — разбирай тему с нуля.")
+    bot_role = data.get("role", "Ты — учитель, который помогает ученикам отвечать на вопросы и готовиться к экзаменам. \
+Сейчас ты ведёшь урок по предмету 'математика' для 5 класса. \
+Отвечай на вопросы ученика максимально понятно и по делу. \
+Если нужно объяснить тему — делай это кратко и с примерами.")
 
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
@@ -31,19 +34,19 @@ def ask_gigachat():
             scope="GIGACHAT_API_PERS",
             verify_ssl_certs=False
         ) as giga:
-            # Всегда добавляем системное сообщение с ролью в начало истории
+            # Формируем сообщения: роль + история + вопрос пользователя
             messages = [
                 Messages(
                     role=MessagesRole.SYSTEM,
-                    content=bot_role
+                    content=bot_role  # Контекст роли (не мешает ответам)
                 )
             ]
 
-            # Добавляем историю сообщений (если нужна)
+            # Добавляем историю (опционально, для контекста диалога)
             for msg in conversation_history:
                 messages.append(msg)
 
-            # Добавляем текущее сообщение пользователя
+            # Добавляем текущий вопрос пользователя
             messages.append(
                 Messages(
                     role=MessagesRole.USER,
@@ -54,7 +57,7 @@ def ask_gigachat():
             payload = Chat(messages=messages)
             response = giga.chat(payload)
 
-            # Сохраняем ответ бота в историю
+            # Сохраняем диалог в историю (опционально)
             conversation_history.append(
                 Messages(
                     role=MessagesRole.USER,
