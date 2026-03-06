@@ -3,21 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>n.shimanovskiy bot</title>
+    <title>n.shim bot</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
-        <h1>n.shimanovskiy bot</h1>
+        <h1>n.shim bot</h1>
 
         <div class="content-wrapper">
-            <!-- Колонка с ролью бота (слева) -->
+            <!-- Колонка с настройками роли -->
             <div class="role-column">
-                <h3>Роль бота</h3>
-                <textarea id="bot-role" placeholder="Ты — эксперт по Python. Отвечай подробно, с примерами кода и объяснениями."></textarea>
+                <h3>Настройки учителя</h3>
+
+                <!-- Выбор предмета -->
+                <div class="select-group">
+                    <label for="subject">Предмет:</label>
+                    <select id="subject">
+                        <option value="математика">Математика</option>
+                        <option value="русский язык">Русский язык</option>
+                        <option value="физика">Физика</option>
+                        <option value="химия">Химия</option>
+                        <option value="биология">Биология</option>
+                        <option value="история">История</option>
+                        <option value="информатика">Информатика</option>
+                        <option value="английский язык">Английский язык</option>
+                    </select>
+                </div>
+
+                <!-- Выбор класса -->
+                <div class="select-group">
+                    <label for="grade">Класс:</label>
+                    <select id="grade">
+                        <option value="5">5 класс</option>
+                        <option value="6">6 класс</option>
+                        <option value="7">7 класс</option>
+                        <option value="8">8 класс</option>
+                        <option value="9">9 класс</option>
+                        <option value="10">10 класс</option>
+                        <option value="11">11 класс</option>
+                    </select>
+                </div>
+
+                <!-- Поле для роли (обновляется автоматически) -->
+                <textarea id="bot-role" placeholder="Ты — учитель, который помогает ученикам в подготовке к экзаменам и изучении материала.
+Сейчас ты ведёшь урок по предмету 'математика' для 5 класса.
+Объясняй темы подробно, с примерами и проверяй понимание ученика.
+Если ученик не понимает — разбирай тему с нуля."></textarea>
             </div>
 
-            <!-- Колонка с чатом (справа) -->
+            <!-- Колонка с чатом -->
             <div class="chat-column">
                 <div id="chat" class="chat"></div>
                 <div class="input-area">
@@ -29,12 +63,29 @@
     </div>
 
     <script>
+        // Обновляем роль бота при изменении предмета/класса
+        function updateBotRole() {
+            const subject = document.getElementById("subject").value;
+            const grade = document.getElementById("grade").value;
+            const roleTextarea = document.getElementById("bot-role");
+
+            roleTextarea.value = `Ты — учитель, который помогает ученикам в подготовке к экзаменам и изучении материала.
+Сейчас ты ведёшь урок по предмету "${subject}" для ${grade} класса.
+Объясняй темы подробно, с примерами и проверяй понимание ученика.
+Если ученик не понимает — разбирай тему с нуля.`;
+        }
+
+        // Устанавливаем обработчики событий
+        document.getElementById("subject").addEventListener("change", updateBotRole);
+        document.getElementById("grade").addEventListener("change", updateBotRole);
+
+        // Функция для отправки сообщения
         async function sendMessage() {
             const messageInput = document.getElementById("message");
             const message = messageInput.value.trim();
             if (!message) return;
 
-            const botRole = document.getElementById("bot-role").value.trim() || "Ты — эксперт по Python. Отвечай подробно, с примерами кода и объяснениями.";
+            const botRole = document.getElementById("bot-role").value.trim();
 
             const chat = document.getElementById("chat");
             chat.innerHTML += `<div><b>Вы:</b> ${message}</div>`;
@@ -52,7 +103,7 @@
 
                 const data = await response.json();
                 chat.innerHTML += `<div><b>Бот:</b> ${data.answer}</div>`;
-                chat.scrollTop = chat.scrollHeight; // Прокрутка вниз
+                chat.scrollTop = chat.scrollHeight;
             } catch (error) {
                 chat.innerHTML += `<div><b>Ошибка:</b> ${error.message}</div>`;
             }
@@ -60,4 +111,3 @@
     </script>
 </body>
 </html>
-
