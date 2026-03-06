@@ -4,8 +4,15 @@ from gigachat import GigaChat
 from gigachat.models import Chat, Messages, MessagesRole
 from dotenv import load_dotenv
 
+# Загружаем переменные окружения
 load_dotenv()
+
 app = Flask(__name__)
+
+# Проверяем, что ключ API загружен
+GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS")
+if not GIGACHAT_CREDENTIALS:
+    raise ValueError("Не найден ключ API для GigaChat. Установите переменную окружения GIGACHAT_CREDENTIALS.")
 
 # История сообщений
 conversation_history = []
@@ -103,7 +110,13 @@ def ask_gigachat():
 
             return jsonify({"answer": response.choices[0].message.content})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Ошибка: {str(e)}"}), 500
+
+@app.route("/clear_history", methods=["POST"])
+def clear_history():
+    global conversation_history
+    conversation_history = []
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
