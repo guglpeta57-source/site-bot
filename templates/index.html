@@ -115,7 +115,11 @@
                 });
 
                 const data = await response.json();
-                chat.innerHTML += `<div><b>Учитель:</b> ${data.answer}</div>`;
+                if (data.error) {
+                    chat.innerHTML += `<div><b>Ошибка:</b> ${data.error}</div>`;
+                } else {
+                    chat.innerHTML += `<div><b>Учитель:</b> ${data.answer}</div>`;
+                }
                 chat.scrollTop = chat.scrollHeight;
             } catch (error) {
                 chat.innerHTML += `<div><b>Ошибка:</b> ${error.message}</div>`;
