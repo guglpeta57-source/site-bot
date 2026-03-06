@@ -7,9 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
 
-GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS")
-
-# История сообщений для одного пользователя (в реальном проекте используйте базу данных или сессии)
+# История сообщений
 conversation_history = []
 
 @app.route("/")
@@ -28,13 +26,48 @@ def ask_gigachat():
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
 
+    # Обработка команд
+    if user_message.startswith("/help"):
+        return jsonify({
+            "answer": "📚 **Список команд:**\n\n"
+                      "/help — показать этот список\n"
+                      "/clear — очистить историю\n"
+                      "/subject [предмет] — сменить предмет (например, /subject физика)\n"
+                      "/example [тема] — попросить пример по теме (например, /example квадратные уравнения)"
+        })
+
+    elif user_message.startswith("/clear"):
+        global conversation_history
+        conversation_history = []
+        return jsonify({"answer": "🧹 История сообщений очищена!"})
+
+    elif user_message.startswith("/subject"):
+        subject = user_message[8:].strip()
+        if subject:
+            lines = bot_role.split('\n')
+            if len(lines) >= 3:
+                lines[2] = f"Сейчас ты ведёшь урок по предмету \"{subject}\" для 5 класса."
+                bot_role = '\n'.join(lines)
+                return jsonify({"answer": f"🔄 Предмет изменён на **{subject}**!"})
+        else:
+            return jsonify({"answer": "❌ Укажите предмет после команды. Пример: /subject физика"})
+
+    elif user_message.startswith("/example"):
+        topic = user_message[8:].strip()
+        if topic:
+            return jsonify({
+                "answer": f"💡 **Пример по теме \"{topic}\":**\n\n"
+                          f"(Здесь бот объяснит тему \"{topic}\" с примерами)"
+            })
+        else:
+            return jsonify({"answer": "❌ Укажите тему после команды. Пример: /example логарифмы"})
+
     try:
         with GigaChat(
             credentials=GIGACHAT_CREDENTIALS,
             scope="GIGACHAT_API_PERS",
             verify_ssl_certs=False
         ) as giga:
-            # Формируем сообщения: роль + история + новый вопрос
             messages = [
                 Messages(
                     role=MessagesRole.SYSTEM,
@@ -42,11 +75,9 @@ def ask_gigachat():
                 )
             ]
 
-            # Добавляем историю сообщений
             for msg in conversation_history:
                 messages.append(msg)
 
-            # Добавляем текущее сообщение пользователя
             messages.append(
                 Messages(
                     role=MessagesRole.USER,
@@ -57,7 +88,6 @@ def ask_gigachat():
             payload = Chat(messages=messages)
             response = giga.chat(payload)
 
-            # Сохраняем новый вопрос и ответ в историю
             conversation_history.append(
                 Messages(
                     role=MessagesRole.USER,
@@ -74,12 +104,6 @@ def ask_gigachat():
             return jsonify({"answer": response.choices[0].message.content})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route("/clear_history", methods=["POST"])
-def clear_history():
-    global conversation_history
-    conversation_history = []
-    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
