@@ -72,10 +72,9 @@
                         placeholder="Введите сообщение..."
                         onkeypress="handleKeyPress(event)"
                     >
-                    <div class="buttons">
-                        <button onclick="sendMessage()">Отправить</button>
-                        <button onclick="clearChat()" class="clear-chat-button">Очистить чат</button>
-                    </div>
+                    <button onclick="sendMessage()">Отправить</button>
+                    <!-- Кнопка очистки чата -->
+                    <button onclick="clearChat()" style="background: #ff6b6b;">Очистить чат</button>
                 </div>
             </div>
         </div>
@@ -113,4 +112,52 @@
             const message = messageInput.value.trim();
             if (!message) return;
 
-            const botRole =
+            const botRole = document.getElementById("bot-role").value.trim();
+
+            const chat = document.getElementById("chat");
+            chat.innerHTML += `<div><b>Вы:</b> ${message}</div>`;
+            messageInput.value = "";
+
+            try {
+                const response = await fetch("/ask", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        message: message,
+                        role: botRole
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    chat.innerHTML += `<div><b>Ошибка:</b> ${data.error}</div>`;
+                } else {
+                    chat.innerHTML += `<div><b>Учитель:</b> ${data.answer}</div>`;
+                }
+                chat.scrollTop = chat.scrollHeight;
+            } catch (error) {
+                chat.innerHTML += `<div><b>Ошибка:</b> ${error.message}</div>`;
+            }
+        }
+
+        // Функция для очистки чата (визуально)
+        function clearChat() {
+            const chat = document.getElementById("chat");
+            chat.innerHTML = "";
+        }
+
+        // Функция для очистки истории (на сервере)
+        async function clearHistory() {
+            try {
+                const response = await fetch("/clear_history", {
+                    method: "POST"
+                });
+                const chat = document.getElementById("chat");
+                chat.innerHTML = "<div>История очищена!</div>";
+            } catch (error) {
+                alert("Ошибка при очистке истории: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
