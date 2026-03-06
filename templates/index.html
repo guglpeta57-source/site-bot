@@ -127,38 +127,42 @@
         }
 
         // Функция для отправки сообщения
-        async function sendMessage() {
-            const messageInput = document.getElementById("message");
-            const message = messageInput.value.trim();
-            if (!message) return;
+async function sendMessage() {
+    const messageInput = document.getElementById("message");
+    const message = messageInput.value.trim();
+    if (!message) return;
 
-            const botRole = document.getElementById("bot-role").value.trim();
+    const botRole = document.getElementById("bot-role").value.trim();
+    const chat = document.getElementById("chat");
 
-            const chat = document.getElementById("chat");
-            chat.innerHTML += `<div><b>Вы:</b> ${message}</div>`;
-            messageInput.value = "";
+    // Добавляем сообщение пользователя
+    chat.innerHTML += `<div class="user-message"><b>Вы:</b> ${message}</div>`;
+    messageInput.value = "";
 
-            try {
-                const response = await fetch("/ask", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        message: message,
-                        role: botRole
-                    })
-                });
+    try {
+        const response = await fetch("/ask", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                message: message,
+                role: botRole
+            })
+        });
 
-                const data = await response.json();
-                if (data.error) {
-                    chat.innerHTML += `<div><b>Ошибка:</b> ${data.error}</div>`;
-                } else {
-                    chat.innerHTML += `<div><b>Учитель:</b> ${data.answer}</div>`;
-                }
-                chat.scrollTop = chat.scrollHeight;
-            } catch (error) {
-                chat.innerHTML += `<div><b>Ошибка:</b> ${error.message}</div>`;
-            }
+        const data = await response.json();
+        if (data.error) {
+            chat.innerHTML += `<div class="teacher-message"><b>Ошибка:</b> ${data.error}</div>`;
+        } else {
+            // Добавляем ответ бота и рендерим формулы
+            chat.innerHTML += `<div class="teacher-message"><b>Учитель:</b> ${data.answer}</div>`;
+            renderMathInElement(chat); // Рендерим формулы после добавления сообщения
         }
+        chat.scrollTop = chat.scrollHeight;
+    } catch (error) {
+        chat.innerHTML += `<div class="teacher-message"><b>Ошибка:</b> ${error.message}</div>`;
+    }
+}
+
 
         // Функция для очистки чата
         function clearChat() {
@@ -168,5 +172,6 @@
     </script>
 </body>
 </html>
+
 
 
