@@ -1,14 +1,16 @@
 import os
-from flask import Flask, request, jsonify, render_template, session
+from flask import Flask, request, jsonify, render_template
 from gigachat import GigaChat
 from gigachat.models import Chat, Messages, MessagesRole
 from dotenv import load_dotenv
 
 load_dotenv()
 app = Flask(__name__)
-app.secret_key = 'твой_секретный_ключ'  # Нужно для работы сессий
 
 GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS")
+
+# История сообщений для одного пользователя (в реальном проекте используйте базу данных или сессии)
+conversation_history = []
 
 @app.route("/")
 def home():
@@ -26,10 +28,6 @@ def ask_gigachat():
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
 
-    # Инициализируем историю сообщений в сессии, если её нет
-    if 'conversation_history' not in session:
-        session['conversation_history'] = []
-
     try:
         with GigaChat(
             credentials=GIGACHAT_CREDENTIALS,
@@ -44,8 +42,8 @@ def ask_gigachat():
                 )
             ]
 
-            # Добавляем историю сообщений из сессии
-            for msg in session['conversation_history']:
+            # Добавляем историю сообщений
+            for msg in conversation_history:
                 messages.append(msg)
 
             # Добавляем текущее сообщение пользователя
@@ -60,23 +58,28 @@ def ask_gigachat():
             response = giga.chat(payload)
 
             # Сохраняем новый вопрос и ответ в историю
-            session['conversation_history'].append(
+            conversation_history.append(
                 Messages(
                     role=MessagesRole.USER,
                     content=user_message
                 )
             )
-            session['conversation_history'].append(
+            conversation_history.append(
                 Messages(
                     role=MessagesRole.ASSISTANT,
                     content=response.choices[0].message.content
                 )
             )
-            session.modified = True  # Сохраняем изменения в сессии
 
             return jsonify({"answer": response.choices[0].message.content})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/clear_history", methods=["POST"])
+def clear_history():
+    global conversation_history
+    conversation_history = []
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
