@@ -3,31 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GigaChat Bot</title>
+    <title>n.shim bot</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
-        <h1>GigaChat Bot</h1>
+        <h1>n.shim bot</h1>
 
-        <!-- Поле для ввода роли бота -->
-        <div class="role-input">
-            <label for="bot-role">Роль бота:</label>
-            <textarea id="bot-role" placeholder="Ты — эксперт по Python. Отвечай подробно, с примерами кода и объяснениями."></textarea>
-        </div>
+        <div class="content-wrapper">
+            <!-- Колонка с ролью бота (слева) -->
+            <div class="role-column">
+                <h3>Роль бота</h3>
+                <textarea id="bot-role" placeholder="Ты — эксперт по Python. Отвечай подробно, с примерами кода и объяснениями."></textarea>
+            </div>
 
-        <!-- Окно чата -->
-        <div id="chat" class="chat"></div>
-
-        <!-- Поле для сообщений -->
-        <div class="input-area">
-            <input type="text" id="message" placeholder="Введите сообщение...">
-            <button onclick="sendMessage()">Отправить</button>
+            <!-- Колонка с чатом (справа) -->
+            <div class="chat-column">
+                <div id="chat" class="chat"></div>
+                <div class="input-area">
+                    <input type="text" id="message" placeholder="Введите сообщение...">
+                    <button onclick="sendMessage()">Отправить</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Функция для отправки сообщения
         async function sendMessage() {
             const messageInput = document.getElementById("message");
             const message = messageInput.value.trim();
@@ -45,12 +46,13 @@
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({
                         message: message,
-                        role: botRole  // Передаём роль бота
+                        role: botRole
                     })
                 });
 
                 const data = await response.json();
                 chat.innerHTML += `<div><b>Бот:</b> ${data.answer}</div>`;
+                chat.scrollTop = chat.scrollHeight; // Прокрутка вниз
             } catch (error) {
                 chat.innerHTML += `<div><b>Ошибка:</b> ${error.message}</div>`;
             }
