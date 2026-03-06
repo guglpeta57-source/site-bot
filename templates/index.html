@@ -50,6 +50,9 @@
 Сейчас ты ведёшь урок по предмету "математика" для 5 класса.
 Если ученик просит объяснить тему — давай примеры и проверяй понимание.
 Не имитируй диалог с другими учениками, общайся только с тем, кто тебе пишет.</textarea>
+
+                <!-- Кнопка очистки истории -->
+                <button onclick="clearHistory()" style="margin-top: 10px; width: 100%;">Очистить историю</button>
             </div>
 
             <!-- Колонка с чатом -->
@@ -116,6 +119,19 @@
                 chat.scrollTop = chat.scrollHeight;
             } catch (error) {
                 chat.innerHTML += `<div><b>Ошибка:</b> ${error.message}</div>`;
+            }
+        }
+
+        // Функция для очистки истории
+        async function clearHistory() {
+            try {
+                const response = await fetch("/clear_history", {
+                    method: "POST"
+                });
+                const chat = document.getElementById("chat");
+                chat.innerHTML = "<div>История очищена!</div>";
+            } catch (error) {
+                alert("Ошибка при очистке истории: " + error.message);
             }
         }
     </script>
