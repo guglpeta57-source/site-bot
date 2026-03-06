@@ -9,9 +9,6 @@ app = Flask(__name__)
 
 GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS")
 
-# История сообщений для контекста (опционально)
-conversation_history = []
-
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -20,10 +17,10 @@ def home():
 def ask_gigachat():
     data = request.json
     user_message = data.get("message")
-    bot_role = data.get("role", "Ты — учитель, который помогает ученикам отвечать на вопросы и готовиться к экзаменам. \
-Сейчас ты ведёшь урок по предмету 'математика' для 5 класса. \
-Отвечай на вопросы ученика максимально понятно и по делу. \
-Если нужно объяснить тему — делай это кратко и с примерами.")
+    bot_role = data.get("role", "Ты — учитель, который общается с учеником напрямую. \
+Отвечай на его вопросы понятно, кратко и по делу. \
+Если ученик просит объяснить тему — давай примеры и проверяй понимание. \
+Не имитируй диалог с другими учениками, общайся только с тем, кто тебе пишет.")
 
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
@@ -34,42 +31,20 @@ def ask_gigachat():
             scope="GIGACHAT_API_PERS",
             verify_ssl_certs=False
         ) as giga:
-            # Формируем сообщения: роль + история + вопрос пользователя
+            # Формируем запрос: роль + вопрос пользователя
             messages = [
                 Messages(
                     role=MessagesRole.SYSTEM,
-                    content=bot_role  # Контекст роли (не мешает ответам)
+                    content=bot_role
+                ),
+                Messages(
+                    role=MessagesRole.USER,
+                    content=user_message
                 )
             ]
 
-            # Добавляем историю (опционально, для контекста диалога)
-            for msg in conversation_history:
-                messages.append(msg)
-
-            # Добавляем текущий вопрос пользователя
-            messages.append(
-                Messages(
-                    role=MessagesRole.USER,
-                    content=user_message
-                )
-            )
-
             payload = Chat(messages=messages)
             response = giga.chat(payload)
-
-            # Сохраняем диалог в историю (опционально)
-            conversation_history.append(
-                Messages(
-                    role=MessagesRole.USER,
-                    content=user_message
-                )
-            )
-            conversation_history.append(
-                Messages(
-                    role=MessagesRole.ASSISTANT,
-                    content=response.choices[0].message.content
-                )
-            )
 
             return jsonify({"answer": response.choices[0].message.content})
     except Exception as e:
