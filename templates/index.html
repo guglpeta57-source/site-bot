@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Учебный бот</title>
     <link rel="stylesheet" href="/static/style.css">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Учебный бот</title>
-    <link rel="stylesheet" href="/static/style.css">
     <!-- Подключаем KaTeX -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
@@ -84,35 +80,55 @@
 
 **Сейчас ты ведёшь урок по предмету "математика" для 5 класса.**
 </textarea>
-<!-- Колонка с чатом -->
-<div class="chat-column">
-    <div id="chat" class="chat"></div>
-    <div class="input-area">
-        <input
-            type="text"
-            id="message"
-            placeholder="Введите сообщение..."
-            onkeypress="handleKeyPress(event)"
-        >
-        <button onclick="sendMessage()">Отправить</button>
-        <button onclick="clearChat()" style="background: #ff6b6b;">Очистить чат</button>
+
+            </div>
+
+            <!-- Колонка с чатом -->
+            <div class="chat-column">
+                <div id="chat" class="chat"></div>
+                <div class="input-area">
+                    <input
+                        type="text"
+                        id="message"
+                        placeholder="Введите сообщение..."
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button onclick="sendMessage()">Отправить</button>
+                    <button onclick="clearChat()" style="background: #ff6b6b;">Очистить чат</button>
+                </div>
+
+                <!-- Блок с QR-кодом -->
+                <div class="qr-section">
+                    <img src="{{ url_for('static', filename='qr.png') }}" alt="QR-код" class="qr-code">
+                    <p class="qr-caption">Попробуйте на своём устройстве</p>
+                </div>
+
+                <!-- Подсказка о командах -->
+                <div class="commands-hint">
+                    <p>💡 <strong>Подсказка:</strong> Попробуйте команды: <code>/help</code>, <code>/clear</code>, <code>/subject физика</code>, <code>/example квадратные уравнения</code></p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Блок с QR-кодом -->
-    <div class="qr-section">
-    <img src="{{ url_for('static', filename='qr.png') }}" alt="QR-код" class="qr-code">
-    <p class="qr-caption">Попробуйте на своём устройстве</p>
-</div>
-
-
-                
-
-    <!-- Подсказка о командах -->
-    <div class="commands-hint">
-        <p>💡 <strong>Подсказка:</strong> Попробуйте команды: <code>/help</code>, <code>/clear</code>, <code>/subject физика</code>, <code>/example квадратные уравнения</code></p>
-    </div>
-
+    <!-- Скрипт для приветственного сообщения -->
     <script>
+        // Функция для добавления приветственного сообщения
+        function addWelcomeMessage() {
+            const chat = document.getElementById("chat");
+            chat.innerHTML += `
+                <div class="teacher-message">
+                    <b>Учитель:</b>
+                    Добро пожаловать в универсального бота для обучения!
+                    Напишите мне, какую тему вы хотите изучить.
+                </div>
+            `;
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Вызываем функцию при загрузке страницы
+        window.onload = addWelcomeMessage;
+
         // Обновляем роль бота при изменении предмета/класса
         function updateBotRole() {
             const subject = document.getElementById("subject").value;
@@ -138,56 +154,49 @@
         }
 
         // Функция для отправки сообщения
-async function sendMessage() {
-    const messageInput = document.getElementById("message");
-    const message = messageInput.value.trim();
-    if (!message) return;
+        async function sendMessage() {
+            const messageInput = document.getElementById("message");
+            const message = messageInput.value.trim();
+            if (!message) return;
 
-    const botRole = document.getElementById("bot-role").value.trim();
-    const chat = document.getElementById("chat");
+            const botRole = document.getElementById("bot-role").value.trim();
+            const chat = document.getElementById("chat");
 
-    // Добавляем сообщение пользователя
-    chat.innerHTML += `<div class="user-message"><b>Вы:</b> ${message}</div>`;
-    messageInput.value = "";
+            // Добавляем сообщение пользователя
+            chat.innerHTML += `<div class="user-message"><b>Вы:</b> ${message}</div>`;
+            messageInput.value = "";
 
-    try {
-        const response = await fetch("/ask", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                message: message,
-                role: botRole
-            })
-        });
+            try {
+                const response = await fetch("/ask", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        message: message,
+                        role: botRole
+                    })
+                });
 
-        const data = await response.json();
-        if (data.error) {
-            chat.innerHTML += `<div class="teacher-message"><b>Ошибка:</b> ${data.error}</div>`;
-        } else {
-            // Добавляем ответ бота и рендерим формулы
-            chat.innerHTML += `<div class="teacher-message"><b>Учитель:</b> ${data.answer}</div>`;
-            renderMathInElement(chat); // Рендерим формулы после добавления сообщения
+                const data = await response.json();
+                if (data.error) {
+                    chat.innerHTML += `<div class="teacher-message"><b>Ошибка:</b> ${data.error}</div>`;
+                } else {
+                    // Добавляем ответ бота и рендерим формулы
+                    chat.innerHTML += `<div class="teacher-message"><b>Учитель:</b> ${data.answer}</div>`;
+                    renderMathInElement(chat); // Рендерим формулы после добавления сообщения
+                }
+                chat.scrollTop = chat.scrollHeight;
+            } catch (error) {
+                chat.innerHTML += `<div class="teacher-message"><b>Ошибка:</b> ${error.message}</div>`;
+            }
         }
-        chat.scrollTop = chat.scrollHeight;
-    } catch (error) {
-        chat.innerHTML += `<div class="teacher-message"><b>Ошибка:</b> ${error.message}</div>`;
-    }
-}
-
 
         // Функция для очистки чата
         function clearChat() {
             const chat = document.getElementById("chat");
             chat.innerHTML = "";
+            // Добавляем приветственное сообщение снова
+            addWelcomeMessage();
         }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
