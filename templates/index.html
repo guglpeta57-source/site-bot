@@ -100,10 +100,10 @@
 
     <!-- Блок с QR-кодом -->
     <div class="qr-section">
-        <img src="/static/qr.png" alt="QR-код" class="qr-code">
-        <p class="qr-caption">Попробуйте на своём устройстве</p>
-    </div>
+    <img src="{{ url_for('static', filename='qr.png') }}" alt="QR-код" class="qr-code">
+    <p class="qr-caption">Попробуйте на своём устройстве</p>
 </div>
+
 
                 
 
@@ -183,6 +183,7 @@ async function sendMessage() {
     </script>
 </body>
 </html>
+
 
 
 
