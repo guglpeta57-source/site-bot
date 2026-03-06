@@ -1,11 +1,12 @@
 import os
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session
 from gigachat import GigaChat
 from gigachat.models import Chat, Messages, MessagesRole
 from dotenv import load_dotenv
 
 load_dotenv()
 app = Flask(__name__)
+app.secret_key = 'твой_секретный_ключ'  # Нужно для работы сессий
 
 GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS")
 
@@ -25,26 +26,53 @@ def ask_gigachat():
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
 
+    # Инициализируем историю сообщений в сессии, если её нет
+    if 'conversation_history' not in session:
+        session['conversation_history'] = []
+
     try:
         with GigaChat(
             credentials=GIGACHAT_CREDENTIALS,
             scope="GIGACHAT_API_PERS",
             verify_ssl_certs=False
         ) as giga:
-            # Формируем запрос: роль + вопрос пользователя
+            # Формируем сообщения: роль + история + новый вопрос
             messages = [
                 Messages(
                     role=MessagesRole.SYSTEM,
                     content=bot_role
-                ),
+                )
+            ]
+
+            # Добавляем историю сообщений из сессии
+            for msg in session['conversation_history']:
+                messages.append(msg)
+
+            # Добавляем текущее сообщение пользователя
+            messages.append(
                 Messages(
                     role=MessagesRole.USER,
                     content=user_message
                 )
-            ]
+            )
 
             payload = Chat(messages=messages)
             response = giga.chat(payload)
+
+            # Сохраняем новый вопрос и ответ в историю
+            session['conversation_history'].append(
+                Messages(
+                    role=MessagesRole.USER,
+                    content=user_message
+                )
+            )
+            session['conversation_history'].append(
+                Messages(
+                    role=MessagesRole.ASSISTANT,
+                    content=response.choices[0].message.content
+                )
+            )
+            session.modified = True  # Сохраняем изменения в сессии
 
             return jsonify({"answer": response.choices[0].message.content})
     except Exception as e:
