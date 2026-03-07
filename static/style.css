@@ -294,3 +294,14 @@ h1 {
         height: 100px;
     }
 }
+
+/* Дисклеймер об ИИ */
+.disclaimer {
+    text-align: center;
+    font-size: 0.8em;
+    color: #888;
+    font-style: italic;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid var(--light-gray);
+}
